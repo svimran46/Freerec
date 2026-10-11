@@ -118,12 +118,35 @@ describe("image-to-pdf", () => {
     const options = { ...(implementation.initialOptions(files) as object), pageSize: "fit", margin: "none" };
     const [output] = await implementation.process(files, options, ctx);
     expect(output.name).toBe("images.pdf");
-    expect(ctx.onProgress).toHaveBeenCalledWith({ done: 1, total: 2, unit: "images" });
+    expect(ctx.onProgress).toHaveBeenCalledWith({ done: 2, total: 2, unit: "images" });
     const { PDFDocument } = await import("pdf-lib");
     const doc = await PDFDocument.load(await blobBytes(output.data));
     expect(doc.getPages().map((page) => page.getSize())).toEqual([
       { width: 3, height: 1.5 },
       { width: 3, height: 1.5 },
     ]);
+  });
+});
+
+describe("image tools", () => {
+  const photo = accepted(new File([PNG_4X2 as Uint8Array<ArrayBuffer>], "photo.png"), "png");
+
+  it("resize explains unusable sizes", () => {
+    expect(blocker("resize-image", [photo], {})).toBe("Enter a width, a height, or both.");
+    expect(blocker("resize-image", [photo], { width: "800" })).toBeNull();
+    expect(blocker("resize-image", [photo], { mode: "percent", percent: 400, source: { width: 8000, height: 6000 } })).toMatch(
+      "larger than 50 MP",
+    );
+  });
+
+  it("upscale waits for the image size and enforces its caps", () => {
+    expect(blocker("upscale-image", [photo], {})).toBe("Reading the image…");
+    expect(blocker("upscale-image", [photo], { source: { width: 2000, height: 2000 } })).toBeNull();
+    expect(blocker("upscale-image", [photo], { factor: 4, source: { width: 2000, height: 2000 } })).toBe(
+      "4× works on images up to 1.0 MP; this one is 4.0 MP. Try 2×, or resizing it first.",
+    );
+    expect(blocker("upscale-image", [photo], { source: { width: 3000, height: 2000 } })).toBe(
+      "2× works on images up to 4.0 MP; this one is 6.0 MP. Try resizing it first.",
+    );
   });
 });

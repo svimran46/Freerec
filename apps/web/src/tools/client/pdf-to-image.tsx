@@ -1,7 +1,7 @@
 "use client";
 
+import { LoadStatus } from "@/components/LoadStatus";
 import { ChoiceGroup, Field, inputClass } from "@/components/form";
-import { PdfStatus } from "@/components/pdf/PageGrid";
 import { usePdfDocument } from "@/components/pdf/usePdfDocument";
 import { canvasToBlob, releaseCanvas } from "@/lib/canvas";
 import type { OutputFile } from "@/lib/download";
@@ -35,7 +35,7 @@ function ToImageOptionsPanel({ files, options, setOptions, disabled }: OptionsPr
   const { error } = usePdfDocument(files[0].file, (pageCount) =>
     setOptions((o) => ({ ...o, pageCount })),
   );
-  if (error || options.pageCount === null) return <PdfStatus error={error} />;
+  if (error || options.pageCount === null) return <LoadStatus error={error} loading="Reading pages…" />;
 
   return (
     <div className="flex flex-col gap-5">

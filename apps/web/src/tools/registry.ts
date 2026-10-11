@@ -77,7 +77,7 @@ export const TOOLS: readonly ToolDefinition[] = [
   {
     slug: "image-to-pdf", title: "Images to PDF", category: "convert", runtime: "client", phase: 1,
     summary: "Put JPG, PNG, and other images into a single PDF.",
-    accepts: ["jpeg", "png", "webp", "gif", "bmp"], ...batch,
+    accepts: IMAGE_KINDS, ...batch,
   },
 
   // Phase 2 — image suite
@@ -97,9 +97,9 @@ export const TOOLS: readonly ToolDefinition[] = [
     accepts: IMAGE_KINDS, ...batch,
   },
   {
-    slug: "upscale-image", title: "Upscale image", category: "image", runtime: "hybrid", phase: 2,
-    summary: "Enlarge images 2× or 4× with classic resampling or AI detail recovery.",
-    accepts: ["jpeg", "png", "webp"], ...single,
+    slug: "upscale-image", title: "Upscale image", category: "image", runtime: "client", phase: 2,
+    summary: "Enlarge images 2× or 4× with sharp, high-quality resampling.",
+    accepts: IMAGE_KINDS, ...single,
   },
 
   // Phase 3 — server conversions

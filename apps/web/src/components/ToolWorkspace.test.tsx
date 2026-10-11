@@ -17,9 +17,9 @@ afterEach(cleanup);
 
 describe("ToolWorkspace", () => {
   it("shows a roadmap notice for tools without an implementation", () => {
-    render(<ToolWorkspace tool={getTool("compress-image")!} />);
-    expect(screen.getByText(/arrives in phase 2/)).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Choose files" })).toBeTruthy();
+    render(<ToolWorkspace tool={getTool("compress-pdf")!} />);
+    expect(screen.getByText(/arrives in phase 3/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Choose a file" })).toBeTruthy();
   });
 
   it("lists accepted files and reports rejected ones", async () => {

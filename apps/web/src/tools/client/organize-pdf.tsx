@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadStatus } from "@/components/LoadStatus";
 import { smallButtonClass } from "@/components/form";
-import { allPages, IconButton, PageGrid, PdfStatus, type GridPage } from "@/components/pdf/PageGrid";
+import { allPages, IconButton, PageGrid, type GridPage } from "@/components/pdf/PageGrid";
 import { usePdfDocument } from "@/components/pdf/usePdfDocument";
 import { stemOf } from "@/lib/file-kinds";
 import { moveItem } from "@/lib/move";
@@ -20,7 +21,7 @@ function OrganizeOptionsPanel({ files, options, setOptions, disabled }: OptionsP
   const { doc, error } = usePdfDocument(files[0].file, (pageCount) =>
     setOptions((o) => ({ ...o, pageCount })),
   );
-  if (!doc || options.pageCount === null) return <PdfStatus error={error} />;
+  if (!doc || options.pageCount === null) return <LoadStatus error={error} loading="Reading pages…" />;
 
   const pageCount = options.pageCount;
   const pages = options.pages ?? allPages(pageCount);

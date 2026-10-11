@@ -2,9 +2,9 @@
 
 import { ChoiceGroup } from "@/components/form";
 import { stemOf } from "@/lib/file-kinds";
-import { toPdfImage } from "@/lib/image/pdf-image";
+import { toPdfImages } from "@/lib/image/pdf-image";
 import { runPdfOp } from "@/lib/pdf/client";
-import type { Orientation, PageSize, PdfImage } from "@/lib/pdf/types";
+import type { Orientation, PageSize } from "@/lib/pdf/types";
 import { defineTool, type OptionsProps } from "@/tools/types";
 import { pdfOutput } from "@/tools/client/shared";
 
@@ -68,12 +68,10 @@ export const imageToPdf = defineTool<ImagesOptions>({
   initialOptions: () => ({ pageSize: "a4", orientation: "auto", margin: "small" }),
   Options: ImagesOptionsPanel,
   async process(files, options, { signal, onProgress }) {
-    const images: PdfImage[] = [];
-    for (const [done, file] of files.entries()) {
-      signal.throwIfAborted();
-      onProgress({ done, total: files.length, unit: "images" });
-      images.push(await toPdfImage(file));
-    }
+    const images = await toPdfImages(files, {
+      signal,
+      onDone: (done) => onProgress({ done, total: files.length, unit: "images" }),
+    });
     const layout = { pageSize: options.pageSize, orientation: options.orientation, margin: MARGINS[options.margin] };
     const bytes = await runPdfOp("imagesToPdf", [images, layout], signal);
     const name = files.length === 1 ? `${stemOf(files[0].file.name)}.pdf` : "images.pdf";

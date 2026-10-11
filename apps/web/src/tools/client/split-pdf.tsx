@@ -1,7 +1,7 @@
 "use client";
 
+import { LoadStatus } from "@/components/LoadStatus";
 import { ChoiceGroup, Field, inputClass } from "@/components/form";
-import { PdfStatus } from "@/components/pdf/PageGrid";
 import { usePdfDocument } from "@/components/pdf/usePdfDocument";
 import { stemOf } from "@/lib/file-kinds";
 import { runPdfOp } from "@/lib/pdf/client";
@@ -48,7 +48,7 @@ function SplitOptionsPanel({ files, options, setOptions, disabled }: OptionsProp
   const { error } = usePdfDocument(files[0].file, (pageCount) =>
     setOptions((o) => ({ ...o, pageCount, ranges: o.ranges || halves(pageCount) })),
   );
-  if (error || options.pageCount === null) return <PdfStatus error={error} />;
+  if (error || options.pageCount === null) return <LoadStatus error={error} loading="Reading pages…" />;
   const result = plan(options);
 
   return (

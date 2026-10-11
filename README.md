@@ -13,8 +13,8 @@ See [docs/PLAN.md](docs/PLAN.md) for the feature inventory, architecture and roa
 |---|---|---|
 | 0 | Foundations: monorepo, tool registry and pages, upload UI, job API, worker, storage, CI | Done |
 | 1 | Client-side PDF organize (merge, split, rotate, reorder, extract, PDF↔image) | Done |
-| 2 | Image suite (compress, resize, convert, upscale) | Next |
-| 3 | Server conversions (compress PDF, Office, PDF→Office, HTML, ebooks) | Planned |
+| 2 | Image suite (compress, resize, convert, upscale) | Done; AI upscaling awaits a hosting decision |
+| 3 | Server conversions (compress PDF, Office, PDF→Office, HTML, ebooks) | Next |
 | 4 | Hardening and launch | Planned |
 
 Every tool already has its page; tools without an implementation show "under construction".

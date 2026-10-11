@@ -1,7 +1,8 @@
 "use client";
 
+import { LoadStatus } from "@/components/LoadStatus";
 import { smallButtonClass } from "@/components/form";
-import { allPages, IconButton, PageGrid, PdfStatus } from "@/components/pdf/PageGrid";
+import { allPages, IconButton, PageGrid } from "@/components/pdf/PageGrid";
 import { usePdfDocument } from "@/components/pdf/usePdfDocument";
 import { stemOf } from "@/lib/file-kinds";
 import { runPdfOp } from "@/lib/pdf/client";
@@ -19,7 +20,7 @@ function RotateOptionsPanel({ files, options, setOptions, disabled }: OptionsPro
   const { doc, error } = usePdfDocument(files[0].file, (pageCount) =>
     setOptions((o) => ({ ...o, pageCount })),
   );
-  if (!doc || options.pageCount === null) return <PdfStatus error={error} />;
+  if (!doc || options.pageCount === null) return <LoadStatus error={error} loading="Reading pages…" />;
 
   const pages = allPages(options.pageCount).map((page) => ({
     ...page,

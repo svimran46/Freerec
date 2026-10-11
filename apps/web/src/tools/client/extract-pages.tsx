@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { LoadStatus } from "@/components/LoadStatus";
 import { ChoiceGroup, Field, inputClass, smallButtonClass } from "@/components/form";
-import { allPages, PageGrid, PdfStatus } from "@/components/pdf/PageGrid";
+import { allPages, PageGrid } from "@/components/pdf/PageGrid";
 import { usePdfDocument } from "@/components/pdf/usePdfDocument";
 import { stemOf } from "@/lib/file-kinds";
 import { runPdfOp } from "@/lib/pdf/client";
@@ -23,7 +24,7 @@ function ExtractOptionsPanel({ files, options, setOptions, disabled }: OptionsPr
   );
   // What's typed in the ranges box; null shows the current selection instead.
   const [draft, setDraft] = useState<string | null>(null);
-  if (!doc || options.pageCount === null) return <PdfStatus error={error} />;
+  if (!doc || options.pageCount === null) return <LoadStatus error={error} loading="Reading pages…" />;
 
   const pageCount = options.pageCount;
   const selected = new Set(options.selected);

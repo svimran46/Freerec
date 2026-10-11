@@ -3,6 +3,8 @@ import { zip, type Zippable } from "fflate";
 export interface OutputFile {
   name: string;
   data: Blob;
+  /** A short note shown with the result, such as its dimensions or the space saved. */
+  detail?: string;
 }
 
 /** Saves a blob through a temporary object URL. */
