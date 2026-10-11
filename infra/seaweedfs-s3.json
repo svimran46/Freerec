@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "freerec",
+      "credentials": [{ "accessKey": "freerec", "secretKey": "freerec-dev-secret" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
