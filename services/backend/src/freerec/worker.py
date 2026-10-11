@@ -3,7 +3,9 @@
 Run a worker with: rq worker --url "$FREEREC_REDIS_URL" default
 """
 
+import ctypes
 import logging
+import sys
 import tempfile
 from functools import cache
 from pathlib import Path
@@ -17,6 +19,18 @@ from freerec.ops import InputPath, OpError
 from freerec.runtime import Runtime, build_runtime
 
 log = logging.getLogger(__name__)
+
+
+def _make_non_dumpable() -> None:
+    """Hides this process's memory and environment (with the storage keys) from other
+    processes of the same user, such as a converter tricked by a malicious file into
+    reading /proc. Forked work horses inherit it; converters get a scrubbed environment."""
+    if sys.platform == "linux":
+        PR_SET_DUMPABLE = 4
+        ctypes.CDLL(None, use_errno=True).prctl(PR_SET_DUMPABLE, 0, 0, 0, 0)
+
+
+_make_non_dumpable()
 
 
 def process_job(rt: Runtime, job_id: str) -> None:

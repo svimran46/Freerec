@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 import boto3
 from botocore.config import Config
@@ -34,13 +35,12 @@ class Storage:
         )
 
     def presigned_get(self, key: str, filename: str) -> str:
-        quoted = filename.replace('"', "")
         return self.public_client.generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": self.bucket,
                 "Key": key,
-                "ResponseContentDisposition": f'attachment; filename="{quoted}"',
+                "ResponseContentDisposition": content_disposition(filename),
             },
             ExpiresIn=self.presign_seconds,
         )
@@ -65,3 +65,9 @@ class Storage:
             objects = [{"Key": obj["Key"]} for obj in page.get("Contents", [])]
             if objects:
                 self.client.delete_objects(Bucket=self.bucket, Delete={"Objects": objects})
+
+
+def content_disposition(filename: str) -> str:
+    """An attachment header that keeps non-ASCII names (RFC 6266), with an ASCII fallback."""
+    fallback = filename.encode("ascii", "replace").decode().replace("?", "_").replace('"', "")
+    return f"attachment; filename=\"{fallback}\"; filename*=UTF-8''{quote(filename, safe='')}"

@@ -38,7 +38,30 @@ class Op:
 def _all_ops() -> list[Op]:
     from freerec.ops import echo
 
-    return [echo.OP]
+    ops = [echo.OP]
+    try:
+        # Conversion ops need the "docs" extra, installed only in the worker image.
+        from freerec.ops import (
+            compress_pdf,
+            ebook_convert,
+            html_to_pdf,
+            office_to_pdf,
+            pdf_to_excel,
+            pdf_to_powerpoint,
+            pdf_to_word,
+        )
+    except ImportError:
+        return ops
+    return [
+        *ops,
+        compress_pdf.OP,
+        office_to_pdf.OP,
+        pdf_to_word.OP,
+        pdf_to_excel.OP,
+        pdf_to_powerpoint.OP,
+        html_to_pdf.OP,
+        ebook_convert.OP,
+    ]
 
 
 def enabled_ops(settings: Settings) -> dict[str, Op]:
