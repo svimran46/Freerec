@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FILE_KINDS } from "@/lib/file-kinds";
 import { LIMITS } from "@/lib/limits";
-import { IMPLEMENTATIONS } from "./implementations";
+import { ALL_IMPLEMENTATIONS, IMPLEMENTATIONS } from "./implementations";
 import { CATEGORIES, getTool, TOOLS, toolsByCategory } from "./registry";
 
 describe("tool registry", () => {
@@ -33,10 +33,14 @@ describe("tool registry", () => {
     expect(grouped.flatMap((g) => g.tools)).toHaveLength(TOOLS.length);
   });
 
-  it("implements every phase 1 and 2 tool, and only registered tools", () => {
-    for (const tool of TOOLS.filter((t) => t.phase <= 2)) {
-      expect(IMPLEMENTATIONS[tool.slug], tool.slug).toBeDefined();
+  it("implements every tool, and only registered tools", () => {
+    for (const tool of TOOLS) expect(ALL_IMPLEMENTATIONS[tool.slug], tool.slug).toBeDefined();
+    for (const slug of Object.keys(ALL_IMPLEMENTATIONS)) expect(getTool(slug), slug).toBeDefined();
+  });
+
+  it("leaves server tools off unless the build enables them", () => {
+    for (const tool of TOOLS) {
+      expect(IMPLEMENTATIONS[tool.slug] !== undefined, tool.slug).toBe(tool.runtime !== "server");
     }
-    for (const slug of Object.keys(IMPLEMENTATIONS)) expect(getTool(slug), slug).toBeDefined();
   });
 });

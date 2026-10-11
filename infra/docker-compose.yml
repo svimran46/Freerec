@@ -50,9 +50,15 @@ services:
 
   worker:
     <<: *backend
+    # LibreOffice, Ghostscript, qpdf, Calibre, and Chromium for the conversion tools.
+    build:
+      context: ../services/backend
+      dockerfile: Dockerfile.worker
     command: rq worker --url redis://redis:6379/0 default
     mem_limit: 2g
-    pids_limit: 256
+    # Chromium and Calibre's renderer run many threads, and each counts as a pid.
+    pids_limit: 1024
+    shm_size: 512m
 
   janitor:
     <<: *backend
@@ -62,6 +68,8 @@ services:
     build:
       context: ..
       dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SERVER_TOOLS: "true"
     environment:
       BACKEND_URL: http://api:8000
     ports: ["3000:3000"]

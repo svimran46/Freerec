@@ -3,8 +3,6 @@
 import io
 from pathlib import Path
 
-from pptx import Presentation
-from pptx.util import Emu
 from pydantic import BaseModel
 
 from freerec.ops import InputPath, NoOptions, Op
@@ -27,6 +25,9 @@ def slide_size(width_pt: float, height_pt: float) -> tuple[int, int]:
 
 
 def run(inputs: list[InputPath], _options: BaseModel, out_dir: Path) -> list[Path]:
+    from pptx import Presentation
+    from pptx.util import Emu
+
     [item] = inputs
     doc = open_pdf(item)
     try:

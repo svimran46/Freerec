@@ -70,7 +70,29 @@ fails before it reaches `main`.
   patch adds `preview-props` to the files the adapter inlines. Drop it once the
   adapter handles the file itself; `pnpm install` will fail loudly if the patched
   version changes.
-- **`/api/jobs`.** This answers `503 Processing service is unavailable` until the
-  backend exists. Phase 3 will set `BACKEND_URL` in `wrangler.jsonc`.
+- **Server tools are off on the Cloudflare site** until a processing backend is deployed;
+  their pages say so. `/api/jobs` answers `503 Processing service is unavailable`.
 - **Docker.** The Docker image (`apps/web/Dockerfile`, used by `infra/docker-compose.yml`)
   still works for local development and for self-hosting.
+
+## Turning on the server tools
+
+The seven server tools (compress PDF, Office to PDF, PDF to Word, Excel, and PowerPoint,
+HTML to PDF, and ebooks) need the processing backend: the API, the conversion worker,
+the janitor, Redis, and S3-compatible storage. `infra/docker-compose.yml` runs all of it;
+a 2-4 core, 4-8 GB server is plenty to start.
+
+1. **Run the backend on a server.**
+   1. Use `infra/docker-compose.yml` without the `web` service.
+   2. Put the API and storage behind HTTPS, with a reverse proxy such as Caddy.
+   3. Set `FREEREC_S3_PUBLIC_ENDPOINT` to the storage's public HTTPS URL.
+   4. Set `FREEREC_CORS_ORIGINS` to the site's address, for example
+      `["https://freerec.svimranmy.workers.dev"]`.
+   5. Change `FREEREC_S3_SECRET_KEY` and `infra/seaweedfs-s3.json` from their development values.
+2. **Point the Worker at it.** Add `"vars": { "BACKEND_URL": "https://api.example.com" }`
+   to `apps/web/wrangler.jsonc`.
+3. **Turn the tools on.** In `.github/workflows/deploy.yml`, give the build step
+   `NEXT_PUBLIC_SERVER_TOOLS: "true"`. The flag is read at build time.
+
+Cloudflare R2 can't take the browser's presigned POST uploads. Keep SeaweedFS on the
+backend server, or switch the API to presigned PUT first (see docs/PLAN.md, Phase 3).

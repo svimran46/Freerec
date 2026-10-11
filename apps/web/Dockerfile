@@ -7,7 +7,9 @@ COPY patches patches
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile --filter web
 COPY apps/web apps/web
-ENV NEXT_TELEMETRY_DISABLED=1
+# "true" turns on the server tools; only for builds with a processing backend behind BACKEND_URL.
+ARG NEXT_PUBLIC_SERVER_TOOLS=false
+ENV NEXT_TELEMETRY_DISABLED=1 NEXT_PUBLIC_SERVER_TOOLS=$NEXT_PUBLIC_SERVER_TOOLS
 RUN pnpm --filter web build
 
 FROM node:22-slim

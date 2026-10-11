@@ -15,8 +15,8 @@ See [docs/PLAN.md](docs/PLAN.md) for the feature inventory, architecture and roa
 | 0 | Foundations: monorepo, tool registry and pages, upload UI, job API, worker, storage, CI | Done |
 | 1 | Client-side PDF organize (merge, split, rotate, reorder, extract, PDF↔image) | Done |
 | 2 | Image suite (compress, resize, convert, upscale) | Done; AI upscaling awaits a hosting decision |
-| 3 | Server conversions (compress PDF, Office, PDF→Office, HTML, ebooks) | Next |
-| 4 | Hardening and launch | Planned |
+| 3 | Server conversions (compress PDF, Office, PDF→Office, HTML, ebooks) | Done; live once a backend is deployed |
+| 4 | Hardening and launch | Next |
 
 Every tool already has its page; tools without an implementation show "under construction".
 
@@ -63,10 +63,14 @@ Backend (Python 3.12+, uv):
 
 ```sh
 cd services/backend
-uv sync
-uv run pytest
+uv sync --extra docs          # the conversion libraries
+uv run pytest                 # conversion tests skip when LibreOffice, Ghostscript, qpdf,
+                              # Calibre, or Chromium is missing; CI installs them all
 uv run ruff check . && uv run ruff format --check .
 ```
+
+The `docker compose` stack builds the worker image with every converter and turns the
+server tools on in its web build.
 
 ## Adding a tool
 

@@ -113,3 +113,34 @@ def test_unknown_job_is_404(client):
 
 def test_healthz(client):
     assert client.get("/healthz").json() == {"status": "ok"}
+
+
+def test_api_knows_every_tool_without_the_conversion_libraries():
+    """The API image has no "docs" extra; importing the ops must not need it."""
+    import subprocess
+    import sys
+
+    code = (
+        "import sys\n"
+        "for name in ('pdfplumber', 'openpyxl', 'pptx', 'pypdfium2', 'playwright'):\n"
+        "    sys.modules[name] = None  # any import of these now fails\n"
+        "from freerec.config import Settings\n"
+        "from freerec.ops import enabled_ops\n"
+        "print(sorted(enabled_ops(Settings())))\n"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    for slug in ("compress-pdf", "office-to-pdf", "pdf-to-word", "pdf-to-excel"):
+        assert slug in result.stdout
+    for slug in ("pdf-to-powerpoint", "html-to-pdf", "ebook-converter"):
+        assert slug in result.stdout
+
+
+def test_validates_tool_options(client):
+    files = [{"name": "a.pdf", "size": 10}]
+    assert (
+        create(client, files=files, tool="compress-pdf", options={"level": "small"}).status_code
+        == 201
+    )
+    response = create(client, files=files, tool="compress-pdf", options={"level": "tiny"})
+    assert response.status_code == 400

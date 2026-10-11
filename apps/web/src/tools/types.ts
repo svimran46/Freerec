@@ -2,12 +2,15 @@ import type { ComponentType } from "react";
 import type { OutputFile } from "@/lib/download";
 import type { AcceptedFile } from "@/lib/validate-files";
 
-export interface Progress {
-  done: number;
-  total: number;
-  /** What `done` counts, such as "pages" or "images". */
-  unit: string;
-}
+export type Progress =
+  | {
+      done: number;
+      total: number;
+      /** What `done` counts, such as "pages" or "images". */
+      unit: string;
+    }
+  /** A step without a count, such as "Converting…". */
+  | { label: string };
 
 export interface RunContext {
   signal: AbortSignal;

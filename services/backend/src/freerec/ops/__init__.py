@@ -36,24 +36,21 @@ class Op:
 
 
 def _all_ops() -> list[Op]:
-    from freerec.ops import echo
+    # Ops import their conversion libraries (the "docs" extra) only when they run, so
+    # the API can validate every tool's options without them; only the worker has them.
+    from freerec.ops import (
+        compress_pdf,
+        ebook_convert,
+        echo,
+        html_to_pdf,
+        office_to_pdf,
+        pdf_to_excel,
+        pdf_to_powerpoint,
+        pdf_to_word,
+    )
 
-    ops = [echo.OP]
-    try:
-        # Conversion ops need the "docs" extra, installed only in the worker image.
-        from freerec.ops import (
-            compress_pdf,
-            ebook_convert,
-            html_to_pdf,
-            office_to_pdf,
-            pdf_to_excel,
-            pdf_to_powerpoint,
-            pdf_to_word,
-        )
-    except ImportError:
-        return ops
     return [
-        *ops,
+        echo.OP,
         compress_pdf.OP,
         office_to_pdf.OP,
         pdf_to_word.OP,

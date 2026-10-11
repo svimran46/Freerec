@@ -1,0 +1,44 @@
+# The conversion worker: the backend with its "docs" extra, plus LibreOffice,
+# Ghostscript, qpdf, Calibre, Chromium, and fonts for many scripts.
+# Build from services/backend: docker build -f Dockerfile.worker .
+#
+# Ubuntu rather than Debian slim: it ships LibreOffice 24.2 and Calibre 7, and
+# Playwright supports it for Chromium's system libraries.
+FROM ubuntu:24.04 AS tools
+
+COPY --from=astral/uv:0.11 /uv /usr/local/bin/uv
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON=python3.12 \
+    UV_PYTHON_DOWNLOADS=never \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/playwright \
+    PATH="/app/.venv/bin:$PATH"
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ca-certificates python3.12 \
+      libreoffice-writer-nogui libreoffice-calc-nogui libreoffice-impress-nogui \
+      ghostscript qpdf calibre \
+      fonts-liberation2 fonts-dejavu-core fonts-noto-core fonts-noto-cjk \
+      fonts-crosextra-carlito fonts-crosextra-caladea \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-dev --extra docs --no-install-project
+COPY src ./src
+RUN uv sync --locked --no-dev --extra docs \
+ && playwright install-deps chromium \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --create-home --uid 10001 app
+
+FROM tools AS worker
+# Only the headless shell: no UI is ever shown, and it is about half the size.
+RUN playwright install --only-shell chromium
+USER app
+CMD ["rq", "worker", "--url", "redis://redis:6379/0", "default"]

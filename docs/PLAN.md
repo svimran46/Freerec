@@ -80,7 +80,7 @@ S3-compatible storage (MinIO locally, Cloudflare R2 in prod) with a 1-hour lifec
 - **Contract:** FastAPI produces OpenAPI, and `openapi-typescript` generates the typed TS client the web app uses.
 - **Tool registry** (`apps/web/src/tools/registry.ts`): slug, title, category, accepted MIME types, limits, `runtime: "client" | "server"`, options schema (zod), and SEO metadata. One generic `ToolPage` renders upload → options → process → result for every tool.
 
-### Repo layout (as built through Phase 2)
+### Repo layout (as built through Phase 3)
 
 ```
 apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest, Playwright
@@ -96,6 +96,7 @@ apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest, Playwr
 services/backend/         one Python package, several entrypoints
   src/freerec/api.py      FastAPI job API (create → presigned POST → submit → poll → delete)
   src/freerec/worker.py   RQ job execution; ops/ holds one module per server tool
+  Dockerfile.worker       the conversion worker: LibreOffice, Ghostscript, qpdf, Calibre, Chromium
   src/freerec/janitor.py  deletes expired jobs' files within a minute (S3 lifecycle is daily)
 infra/docker-compose.yml  web, api, worker, janitor, redis, SeaweedFS (S3), storage-setup
 scripts/smoke.py          end-to-end check run in CI against the compose stack
@@ -113,7 +114,7 @@ Deviations from the original proposal:
 
 ## Technical requirements
 
-- **Limits (proposed defaults):** 100 MB per file, 20 files per batch, 500 PDF pages, 50 MP image input, upscale input ≤ 4 MP (2×) or ≤ 1 MP (4×), and 120 s job timeout.
+- **Limits (defaults):** 100 MB per file, 20 files per batch, 500 PDF pages, 50 MP image input, upscale input ≤ 4 MP (2×) or ≤ 1 MP (4×), and a 300 s job timeout (240 s per converter).
 - **Security:**
   - Sniff file types by magic bytes, not by extension.
   - Guard against decompression bombs (Pillow `MAX_IMAGE_PIXELS`, page caps).
@@ -192,9 +193,45 @@ Notes from building it:
   (c) an in-browser model (UpscalerJS ESRGAN, MIT, on npm) that costs nothing to run.
   Upscale ships with the classic Lanczos mode, marked as on-device.
 
-**Phase 3: Server conversions (about 2 weeks)**
+**Phase 3: Server conversions (about 2 weeks) — done; needs a backend host to go live**
 - Compress PDF, Office→PDF, PDF→Word/Excel/PPTX, HTML/URL→PDF, and ebook conversions.
 - Each op is an isolated module with golden-file tests.
+
+Notes from building it:
+- **One worker image** (`services/backend/Dockerfile.worker`, about 1.2 GB) runs every
+  conversion. It's based on Ubuntu 24.04, which ships LibreOffice 24.2 and Calibre 7, plus
+  Ghostscript, qpdf, the Playwright headless Chromium shell, and Noto/Liberation/Carlito
+  fonts. The API and janitor keep the small Python image: ops load their conversion
+  libraries only when they run, so the API validates every tool without them.
+- **Tools.**
+  - Compress PDF: Ghostscript presets, then qpdf.
+  - Office→PDF and PDF→Word: LibreOffice.
+  - PDF→Excel: pdfplumber and openpyxl.
+  - PDF→PowerPoint: pypdfium2 and python-pptx; each slide is a page image.
+  - HTML→PDF: Playwright and Chromium.
+  - Ebooks: Calibre.
+- **Licenses.** Ghostscript (AGPL) and Calibre (GPL) run unmodified as separate programs.
+  PDF→Word uses LibreOffice's PDF import instead of pdf2docx, because pdf2docx depends on
+  PyMuPDF (AGPL). pdf2docx would keep layouts closer. Switching to it is a license decision
+  for the owner (risk 2).
+- **Untrusted files.**
+  - Converters get a scrubbed environment and a timeout.
+  - The worker is non-dumpable, so `/proc` can't expose its storage keys.
+  - LibreOffice runs with a fresh profile per job that blocks macros and linked files and URLs.
+  - HTML is loaded with `set_content`, with JavaScript off and every request blocked, so it
+    can't read `file://` URLs or reach other hosts. Tests cover scripts, remote images, and
+    `file://` iframes.
+- **"URL→PDF" is HTML-file→PDF for now.** Fetching arbitrary URLs needs an SSRF-safe fetcher;
+  it's deferred to Phase 4.
+- **Results never stay on the server.** The browser downloads each result, then deletes the
+  job. A failed or cancelled job is deleted too.
+- **Server tools are off by default.** A web build turns them on with
+  `NEXT_PUBLIC_SERVER_TOOLS=true`; the Cloudflare site keeps them off until a backend is
+  deployed (see DEPLOY.md).
+- **Storage.** Cloudflare R2 doesn't support presigned POST uploads, which the API uses to
+  cap upload sizes. In production, either run SeaweedFS next to the backend, as in
+  `infra/docker-compose.yml`, or switch uploads to presigned PUT with a signed
+  `Content-Length` before moving to R2.
 
 **Phase 4: Hardening and launch (about 1 week)**
 - Rate limits, Turnstile, worker sandboxing review, and a malformed-file fuzz set.

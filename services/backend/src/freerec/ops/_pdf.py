@@ -1,14 +1,19 @@
 """Shared checks for ops that read PDFs."""
 
-import pypdfium2 as pdfium
+from typing import TYPE_CHECKING
 
 from freerec.ops import InputPath, OpError
+
+if TYPE_CHECKING:
+    import pypdfium2 as pdfium
 
 MAX_PAGES = 500
 
 
-def open_pdf(item: InputPath) -> pdfium.PdfDocument:
+def open_pdf(item: InputPath) -> "pdfium.PdfDocument":
     """Opens a PDF, turning library errors into messages for the user."""
+    import pypdfium2 as pdfium
+
     try:
         doc = pdfium.PdfDocument(item.path)
     except pdfium.PdfiumError as error:

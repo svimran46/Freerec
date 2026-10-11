@@ -168,7 +168,9 @@ export function ToolWorkspace({ tool, implementation = IMPLEMENTATIONS[tool.slug
 
       {!implementation ? (
         <p className="rounded-xl border border-border bg-surface-muted px-4 py-3 text-sm text-text-muted">
-          This tool is under construction and arrives in phase {tool.phase} of the roadmap.
+          {tool.runtime === "server"
+            ? "This tool runs on our servers, which aren't switched on for this site yet. Check back soon."
+            : `This tool is under construction and arrives in phase ${tool.phase} of the roadmap.`}
         </p>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
@@ -184,7 +186,9 @@ export function ToolWorkspace({ tool, implementation = IMPLEMENTATIONS[tool.slug
             <>
               {run.progress && (
                 <span role="status" className="text-sm text-text-muted">
-                  {run.progress.done} of {run.progress.total} {run.progress.unit}
+                  {"label" in run.progress
+                    ? run.progress.label
+                    : `${run.progress.done} of ${run.progress.total} ${run.progress.unit}`}
                 </span>
               )}
               <button type="button" onClick={() => abortRef.current?.abort()} className="text-sm underline">

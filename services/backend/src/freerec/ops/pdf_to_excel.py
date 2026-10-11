@@ -3,9 +3,6 @@
 import re
 from pathlib import Path
 
-import pdfplumber
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 from pydantic import BaseModel
 
 from freerec.ops import InputPath, NoOptions, Op, OpError
@@ -27,6 +24,10 @@ def cell_value(text: str | None) -> str | int | float | None:
 
 
 def run(inputs: list[InputPath], _options: BaseModel, out_dir: Path) -> list[Path]:
+    import pdfplumber
+    from openpyxl import Workbook
+    from openpyxl.utils import get_column_letter
+
     [item] = inputs
     check_pdf(item)
     workbook = Workbook()

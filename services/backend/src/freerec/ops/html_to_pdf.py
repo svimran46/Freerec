@@ -10,8 +10,6 @@ import tempfile
 from pathlib import Path
 from typing import Literal
 
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import sync_playwright
 from pydantic import BaseModel
 
 from freerec.config import get_settings
@@ -37,6 +35,9 @@ def read_html(path: Path) -> str:
 
 
 def run(inputs: list[InputPath], options: BaseModel, out_dir: Path) -> list[Path]:
+    from playwright.sync_api import Error as PlaywrightError
+    from playwright.sync_api import sync_playwright
+
     assert isinstance(options, HtmlOptions)
     [item] = inputs
     settings = get_settings()
