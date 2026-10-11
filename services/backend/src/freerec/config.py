@@ -26,7 +26,12 @@ class Settings(BaseSettings):
     # Uploads, outputs and job records are deleted this long after job creation.
     retention_seconds: int = 60 * 60
     presign_seconds: int = 15 * 60
-    job_timeout_seconds: int = 120
+    # Office and ebook conversions can take a while on large files.
+    job_timeout_seconds: int = 300
+    # Each external tool (LibreOffice, Ghostscript, Calibre, Chromium) gets this long.
+    tool_timeout_seconds: int = 240
+    # Chromium for HTML to PDF; None uses the browser Playwright installed.
+    chromium_path: str | None = None
 
     # Enables the "echo" operation used to smoke-test the pipeline end to end.
     enable_debug_ops: bool = False

@@ -1,10 +1,13 @@
 import time
+from pathlib import Path
 
+import pytest
 from conftest import object_keys
 
 from freerec.janitor import sweep
 from freerec.jobs import InputFile, Job, JobStatus
 from freerec.ops import NoOptions, Op, OpError
+from freerec.storage import content_disposition
 from freerec.worker import process_job
 
 
@@ -86,3 +89,25 @@ def test_setup_storage_is_idempotent(runtime):
     assert rule["Expiration"] == {"Days": 1}
     [cors] = client.get_bucket_cors(Bucket="fresh-bucket")["CORSRules"]
     assert cors["AllowedOrigins"] == ["http://localhost:3000"]
+
+
+def test_runs_a_real_conversion_end_to_end(runtime, upload):
+    """Inputs are stored without extensions; the worker detects the kind and the op
+    names its output after the original file."""
+    pytest.importorskip("pptx")
+    body = (Path(__file__).parent / "fixtures" / "report.pdf").read_bytes()
+    job = queued_job(runtime, upload, body, name="Q3 résumé.pdf", tool="pdf-to-powerpoint")
+    process_job(runtime, job.id)
+    result = runtime.jobs.get(job.id)
+    assert result.error is None
+    assert result.status == JobStatus.DONE
+    [output] = result.outputs
+    assert output.name == "Q3 résumé.pptx"
+    assert output.key == f"{job.prefix}out/Q3 résumé.pptx"
+
+
+def test_content_disposition_keeps_unicode_names():
+    assert content_disposition('Q3 "final" résumé.pdf') == (
+        'attachment; filename="Q3 final r_sum_.pdf"; '
+        "filename*=UTF-8''Q3%20%22final%22%20r%C3%A9sum%C3%A9.pdf"
+    )

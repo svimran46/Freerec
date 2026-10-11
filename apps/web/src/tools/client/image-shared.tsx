@@ -1,19 +1,12 @@
 import { ChoiceGroup, Field } from "@/components/form";
 import type { OutputFile } from "@/lib/download";
-import { formatBytes } from "@/lib/format";
+import { sizeChange } from "@/lib/format";
 import { OUTPUT_FORMATS, type FormatChoice, type OutputFormat } from "@/lib/image/formats";
 import type { ProcessResult } from "@/lib/image/types";
 
 export function imageOutput(name: string, format: OutputFormat, result: ProcessResult, original: File): OutputFile {
   const data = new Blob([result.bytes], { type: OUTPUT_FORMATS[format].mime });
   return { name, data, detail: `${result.size.width} × ${result.size.height} · ${sizeChange(original.size, data.size)}` };
-}
-
-/** "120 KB, 64% smaller" or "1.2 MB, 30% larger". */
-export function sizeChange(before: number, after: number): string {
-  const change = Math.round((1 - after / before) * 100);
-  if (change === 0) return `${formatBytes(after)}, about the same size`;
-  return `${formatBytes(after)}, ${Math.abs(change)}% ${change > 0 ? "smaller" : "larger"}`;
 }
 
 const FORMAT_CHOICES = (Object.keys(OUTPUT_FORMATS) as OutputFormat[]).map((value) => ({

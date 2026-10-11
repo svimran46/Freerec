@@ -16,9 +16,9 @@ const withProcess = (process: Process) => defineTool<null>({ initialOptions: () 
 afterEach(cleanup);
 
 describe("ToolWorkspace", () => {
-  it("shows a roadmap notice for tools without an implementation", () => {
+  it("explains when a server tool's backend isn't switched on", () => {
     render(<ToolWorkspace tool={getTool("compress-pdf")!} />);
-    expect(screen.getByText(/arrives in phase 3/)).toBeTruthy();
+    expect(screen.getByText(/runs on our servers, which aren't switched on/)).toBeTruthy();
     expect(screen.getByRole("button", { name: "Choose a file" })).toBeTruthy();
   });
 

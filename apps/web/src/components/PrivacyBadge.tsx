@@ -3,7 +3,7 @@ import type { ToolRuntime } from "@/tools/registry";
 
 const LABELS: Record<ToolRuntime, string> = {
   client: "Processed on your device — files never leave it",
-  server: `Processed on our servers — deleted within ${LIMITS.retentionMinutes} minutes`,
+  server: `Processed on our servers — deleted once you have the result, or within ${LIMITS.retentionMinutes} minutes`,
   hybrid: `Classic mode runs on your device; AI mode runs on our servers and deletes files within ${LIMITS.retentionMinutes} minutes`,
 };
 

@@ -10,6 +10,8 @@ const BASE_URL = process.env.E2E_BASE_URL;
  */
 export default defineConfig({
   testDir: "e2e",
+  // Server tools need the whole docker compose stack; CI's "stack" job sets this.
+  testIgnore: process.env.E2E_SERVER_TOOLS ? [] : ["server-tools.spec.ts"],
   timeout: 60_000,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? "github" : "list",

@@ -2,7 +2,9 @@
 """End-to-end smoke test for the running stack (docker compose up).
 
 Sends a file through web proxy → API → presigned upload → queue → worker →
-presigned download using the debug "echo" tool, then deletes the job.
+presigned download using the debug "echo" tool, then deletes the job. Then
+converts a real Word document to PDF, which proves the worker image's
+converters work.
 
 Usage: python3 scripts/smoke.py [--web http://localhost:3000]
 """
@@ -14,8 +16,10 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 PAYLOAD = b"%PDF-1.7\n% freerec smoke test " + secrets.token_hex(8).encode() + b"\n"
+DOCX = Path(__file__).parent.parent / "services/backend/tests/fixtures/report.docx"
 
 
 def call(method: str, url: str, body: bytes | None = None, headers=None) -> tuple[int, bytes]:
@@ -65,6 +69,33 @@ def check(condition: bool, message: str) -> None:
     print(f"ok   {message}")
 
 
+def run_job(web: str, tool: str, name: str, payload: bytes, timeout: int = 60) -> dict:
+    """Creates a job, uploads the file, submits it, and waits for it to finish."""
+    status, job = call_json(
+        "POST",
+        f"{web}/api/jobs",
+        {"tool": tool, "files": [{"name": name, "size": len(payload)}]},
+    )
+    check(status == 201, f"{tool}: job created ({status} {job})")
+
+    [upload] = job["uploads"]
+    body, content_type = multipart(upload["fields"], payload, name)
+    status, raw = call("POST", upload["url"], body, {"content-type": content_type})
+    check(status in (200, 201, 204), f"{tool}: presigned upload accepted ({status} {raw[:200]!r})")
+
+    status, submitted = call_json("POST", f"{web}/api/jobs/{job['id']}/submit")
+    check(status == 202, f"{tool}: job submitted ({status} {submitted})")
+
+    deadline = time.time() + timeout
+    while True:
+        status, current = call_json("GET", f"{web}/api/jobs/{job['id']}")
+        if current.get("status") in ("done", "failed", "expired") or time.time() > deadline:
+            break
+        time.sleep(1)
+    check(current.get("status") == "done", f"{tool}: job finished ({current})")
+    return current
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--web", default="http://localhost:3000")
@@ -76,37 +107,24 @@ def main() -> None:
     status, page = call("GET", f"{web}/tools/compress-image")
     check(status == 200 and b"Compress image" in page, "tool page renders")
 
-    status, job = call_json(
-        "POST",
-        f"{web}/api/jobs",
-        {"tool": "echo", "files": [{"name": "smoke.pdf", "size": len(PAYLOAD)}]},
-    )
-    check(status == 201, f"job created ({status} {job})")
-
-    [upload] = job["uploads"]
-    body, content_type = multipart(upload["fields"], PAYLOAD, "smoke.pdf")
-    status, raw = call("POST", upload["url"], body, {"content-type": content_type})
-    check(status in (200, 201, 204), f"presigned upload accepted ({status} {raw[:200]!r})")
-
-    status, submitted = call_json("POST", f"{web}/api/jobs/{job['id']}/submit")
-    check(status == 202, f"job submitted ({status} {submitted})")
-
-    deadline = time.time() + 60
-    while True:
-        status, current = call_json("GET", f"{web}/api/jobs/{job['id']}")
-        if current.get("status") in ("done", "failed", "expired") or time.time() > deadline:
-            break
-        time.sleep(1)
-    check(current.get("status") == "done", f"job finished ({current})")
-
+    current = run_job(web, "echo", "smoke.pdf", PAYLOAD)
     [output] = current["outputs"]
     status, downloaded = call("GET", output["url"])
     check(status == 200 and downloaded == PAYLOAD, "output downloads byte-identical")
 
-    status, _ = call("DELETE", f"{web}/api/jobs/{job['id']}")
+    status, _ = call("DELETE", f"{web}/api/jobs/{current['id']}")
     check(status == 204, "job deleted")
     status, _ = call("GET", output["url"])
     check(status in (403, 404), f"output no longer downloadable ({status})")
+
+    current = run_job(web, "office-to-pdf", "report.docx", DOCX.read_bytes(), timeout=180)
+    [output] = current["outputs"]
+    status, downloaded = call("GET", output["url"])
+    check(
+        output["name"] == "report.pdf" and status == 200 and downloaded.startswith(b"%PDF-"),
+        "Word document converted to PDF by the worker image",
+    )
+    call("DELETE", f"{web}/api/jobs/{current['id']}")
     print("PASS")
 
 

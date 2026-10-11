@@ -5,13 +5,13 @@ import { CompareSlider } from "@/components/CompareSlider";
 import { Field, inputClass } from "@/components/form";
 import type { OutputFile } from "@/lib/download";
 import { stemOf, type FileKind } from "@/lib/file-kinds";
-import { formatBytes } from "@/lib/format";
+import { formatBytes, sizeChange } from "@/lib/format";
 import { processImages } from "@/lib/image/client";
 import { OUTPUT_FORMATS, resolveFormat, usesQuality, type FormatChoice, type OutputFormat } from "@/lib/image/formats";
 import type { ProcessResult } from "@/lib/image/types";
 import type { AcceptedFile } from "@/lib/validate-files";
 import { defineTool, type OptionsProps } from "@/tools/types";
-import { FormatPicker, imageOutput, QualitySlider, sizeChange } from "@/tools/client/image-shared";
+import { FormatPicker, imageOutput, QualitySlider } from "@/tools/client/image-shared";
 
 interface CompressOptions {
   format: FormatChoice;
