@@ -1,0 +1,18 @@
+// Cloudflare Workers deployment of the web app, built by the OpenNext adapter.
+// Build: pnpm build:cloudflare · Local preview: pnpm preview:cloudflare · Deploy: pnpm deploy:cloudflare
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "freerec",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+  // BACKEND_URL (the FastAPI service for server tools) is added in Phase 3. Until then
+  // /api/jobs answers 503 "Processing service is unavailable."
+}

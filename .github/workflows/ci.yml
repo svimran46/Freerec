@@ -26,6 +26,8 @@ jobs:
       - run: pnpm --filter web build
       - run: pnpm --filter web exec playwright install --with-deps chromium
       - run: pnpm --filter web test:e2e
+      # The Cloudflare Workers bundle must build too; deploys run it on main.
+      - run: pnpm --filter web build:cloudflare
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

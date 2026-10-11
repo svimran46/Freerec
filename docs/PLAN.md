@@ -136,7 +136,10 @@ Deviations from the original proposal:
    - **The user should confirm their license policy.**
 3. **PDF → Word/PPT fidelity.** The open-source quality is "good, not Acrobat". A commercial SDK could be added later behind the same op interface.
 4. **Upscaling compute.** CPU Real-ESRGAN takes tens of seconds per MP. Options are to keep strict caps or add a GPU worker (RunPod, Modal, or a GPU instance). **The budget is unknown.**
-5. **Hosting and budget.** The planned split is Vercel for web and a container host (Render, Fly, or Cloud Run) for the api and workers. The doc-worker image is about 1.5–2 GB because of LibreOffice, Chromium, and Calibre.
+5. **Hosting and budget.** Decided: the web app runs on **Cloudflare Workers** (see
+   [DEPLOY.md](DEPLOY.md)). The Phase 3 api and workers still need a container host or a
+   small VPS, with uploads in Cloudflare R2. The doc-worker image is about 1.5–2 GB because
+   of LibreOffice, Chromium, and Calibre.
 6. **Product details still open.** Brand name and domain (is "Freerec" final?), retention window, analytics and ads, and target UI languages.
 7. **Abuse.** Anonymous free compute attracts bots, so Turnstile and per-IP and per-ASN quotas are needed from day one.
 
