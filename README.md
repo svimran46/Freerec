@@ -12,12 +12,12 @@ See [docs/PLAN.md](docs/PLAN.md) for the feature inventory, architecture and roa
 | Phase | Scope | State |
 |---|---|---|
 | 0 | Foundations: monorepo, tool registry and pages, upload UI, job API, worker, storage, CI | Done |
-| 1 | Client-side PDF organize (merge, split, rotate, reorder, extract, PDF↔image) | Next |
-| 2 | Image suite (compress, resize, convert, upscale) | Planned |
+| 1 | Client-side PDF organize (merge, split, rotate, reorder, extract, PDF↔image) | Done |
+| 2 | Image suite (compress, resize, convert, upscale) | Next |
 | 3 | Server conversions (compress PDF, Office, PDF→Office, HTML, ebooks) | Planned |
 | 4 | Hardening and launch | Planned |
 
-Every tool already has its page; tools without a processor show "under construction".
+Every tool already has its page; tools without an implementation show "under construction".
 
 ## Layout
 
@@ -49,6 +49,9 @@ pnpm install
 pnpm --filter web dev        # needs the backend running for server tools
 pnpm --filter web test
 pnpm --filter web lint && pnpm --filter web typecheck
+
+# Browser tests for the on-device tools (Chromium via Playwright)
+pnpm --filter web build && pnpm --filter web test:e2e
 ```
 
 Backend (Python 3.12+, uv):
@@ -63,6 +66,10 @@ uv run ruff check . && uv run ruff format --check .
 ## Adding a tool
 
 1. Add its definition to `apps/web/src/tools/registry.ts`.
-2. For a browser tool, add a processor to `apps/web/src/tools/processors.ts`.
-3. For a server tool, add a module under `services/backend/src/freerec/ops/`, register it in
-   `_all_ops`, and use `runServerJob` from `apps/web/src/lib/api/jobs.ts` as its processor.
+2. Write its implementation with `defineTool` (`apps/web/src/tools/types.ts`): initial
+   settings, an optional settings panel, an optional `blocker` that says why it can't run
+   yet, and `process`. Register it in `apps/web/src/tools/implementations.ts`.
+3. Browser tools live in `apps/web/src/tools/client/`. Heavy PDF edits go through
+   `runPdfOp` (a cancellable Web Worker); page previews use `PageGrid` and `usePdfDocument`.
+4. For a server tool, add a module under `services/backend/src/freerec/ops/`, register it in
+   `_all_ops`, and call `runServerJob` from `apps/web/src/lib/api/jobs.ts` in `process`.

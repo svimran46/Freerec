@@ -80,13 +80,17 @@ S3-compatible storage (MinIO locally, Cloudflare R2 in prod) with a 1-hour lifec
 - **Contract:** FastAPI produces OpenAPI, and `openapi-typescript` generates the typed TS client the web app uses.
 - **Tool registry** (`apps/web/src/tools/registry.ts`): slug, title, category, accepted MIME types, limits, `runtime: "client" | "server"`, options schema (zod), and SEO metadata. One generic `ToolPage` renders upload → options → process → result for every tool.
 
-### Repo layout (as built in Phase 0)
+### Repo layout (as built through Phase 1)
 
 ```
-apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest
+apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest, Playwright
   src/tools/registry.ts   every tool: slug, category, runtime, accepted kinds, limits
-  src/tools/processors.ts browser processors by slug (filled from Phase 1)
+  src/tools/implementations.ts  tool implementations by slug (settings, blocker, process)
+  src/tools/client/       browser tools, one module each
+  src/lib/pdf/            pdf-lib edits run in a Web Worker; pdf.js rendering; page ranges
+  src/components/pdf/     page-thumbnail grid and the pdf.js document hook
   src/lib/                file-kind sniffing, validation, ZIP/download, job API client
+  e2e/                    Playwright tests that drive each browser tool in Chromium
   src/app/api/jobs/       thin proxy to the backend (rate limits/bot checks land here)
 services/backend/         one Python package, several entrypoints
   src/freerec/api.py      FastAPI job API (create → presigned POST → submit → poll → delete)
@@ -94,7 +98,7 @@ services/backend/         one Python package, several entrypoints
   src/freerec/janitor.py  deletes expired jobs' files within a minute (S3 lifecycle is daily)
 infra/docker-compose.yml  web, api, worker, janitor, redis, SeaweedFS (S3), storage-setup
 scripts/smoke.py          end-to-end check run in CI against the compose stack
-.github/workflows/ci.yml  lint, typecheck, unit tests, build, compose smoke test
+.github/workflows/ci.yml  lint, typecheck, unit tests, build, browser tests, compose smoke test
 ```
 
 Deviations from the original proposal:
@@ -143,10 +147,22 @@ Deviations from the original proposal:
 - Design tokens and layout, the tool registry, the generic `ToolPage`, the Dropzone, and download/ZIP utilities.
 - FastAPI job API with presigned upload/download, Redis job state, a no-op worker, and the storage TTL lifecycle.
 
-**Phase 1: Client-side PDF organize (about 1 week)**
+**Phase 1: Client-side PDF organize (about 1 week) — done**
 - Merge, split, rotate, reorder/delete, and extract pages.
 - PDF→JPG/PNG and Images→PDF.
 - Page-thumbnail grid component.
+
+Notes from building it:
+- **pdf-lib edits run in a module Web Worker**, one per job, so cancelling terminates the
+  work at once and large files don't freeze the page.
+- **pdf.js runs from its legacy build.** The modern pdf.js 6 build calls
+  `Map.prototype.getOrInsertComputed`, which only the newest browsers ship; the legacy
+  build polyfills it. pdf.js's CMaps, standard fonts, and decoders are copied to
+  `public/pdfjs/` at build time.
+- **Images→PDF embeds upright JPEGs and PNGs untouched** (no quality loss). Photos with an
+  EXIF rotation, and WebP/GIF/BMP, are redrawn upright by the browser first.
+- **Known limits:** password-protected PDFs are refused with a clear message (unlocking is a
+  post-MVP tool). Rebuilt documents keep page content but not bookmarks or form fields.
 
 **Phase 2: Image suite (about 1.5 weeks)**
 - Compress (quality slider, before/after, size estimate), resize, convert (with HEIC input), and batch + ZIP. All client-side.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FILE_KINDS } from "@/lib/file-kinds";
 import { LIMITS } from "@/lib/limits";
+import { IMPLEMENTATIONS } from "./implementations";
 import { CATEGORIES, getTool, TOOLS, toolsByCategory } from "./registry";
 
 describe("tool registry", () => {
@@ -30,5 +31,12 @@ describe("tool registry", () => {
     const grouped = toolsByCategory();
     expect(grouped.map((g) => g.category)).toEqual(Object.keys(CATEGORIES));
     expect(grouped.flatMap((g) => g.tools)).toHaveLength(TOOLS.length);
+  });
+
+  it("implements every phase 1 tool, and only registered tools", () => {
+    for (const tool of TOOLS.filter((t) => t.phase === 1)) {
+      expect(IMPLEMENTATIONS[tool.slug], tool.slug).toBeDefined();
+    }
+    for (const slug of Object.keys(IMPLEMENTATIONS)) expect(getTool(slug), slug).toBeDefined();
   });
 });
