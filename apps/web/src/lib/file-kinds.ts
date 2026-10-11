@@ -66,6 +66,12 @@ export function extensionOf(filename: string): string {
   return dot === -1 ? "" : filename.slice(dot).toLowerCase();
 }
 
+/** The file name without its extension: "report.final.pdf" → "report.final". */
+export function stemOf(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  return dot > 0 ? filename.slice(0, dot) : filename;
+}
+
 export function kindFromExtension(filename: string): FileKind | null {
   const ext = extensionOf(filename);
   for (const [kind, info] of Object.entries(FILE_KINDS)) {
