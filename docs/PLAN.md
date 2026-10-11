@@ -41,7 +41,7 @@ Decisions confirmed with the user:
 - Libraries: `pdf-lib` for page manipulation and `pdfjs-dist` for thumbnails and rendering.
 
 **B. Image tools**
-- **Compress.** A quality slider (1–100), output format choice (keep / JPEG / WebP / AVIF / PNG), a before/after comparison slider, a live size estimate, and an option to strip metadata. Client-side with `@jsquash/*` WASM codecs (mozjpeg, webp, avif, oxipng).
+- **Compress.** A quality slider (1–100), output format choice (keep / JPEG / WebP / AVIF / PNG), a before/after comparison slider, a live size estimate, and metadata stripping. Client-side with `@jsquash/*` WASM codecs (mozjpeg, webp, avif, oxipng).
 - **Resize.** By pixels, percent, or presets (social sizes), with aspect lock and fit modes (contain / cover / stretch). Client-side with `pica` (Lanczos3).
 - **Convert.** Between JPG, PNG, WebP, AVIF, and GIF (first frame). HEIC input uses `libheif-js`.
 - **Upscale.** 2× / 4× runs server-side with Real-ESRGAN (`realesrgan-x4plus`, BSD-3 weights) on ONNX Runtime. A "Classic" Lanczos mode runs instantly in the browser. Input is capped by megapixels.
@@ -80,7 +80,7 @@ S3-compatible storage (MinIO locally, Cloudflare R2 in prod) with a 1-hour lifec
 - **Contract:** FastAPI produces OpenAPI, and `openapi-typescript` generates the typed TS client the web app uses.
 - **Tool registry** (`apps/web/src/tools/registry.ts`): slug, title, category, accepted MIME types, limits, `runtime: "client" | "server"`, options schema (zod), and SEO metadata. One generic `ToolPage` renders upload → options → process → result for every tool.
 
-### Repo layout (as built through Phase 1)
+### Repo layout (as built through Phase 2)
 
 ```
 apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest, Playwright
@@ -88,6 +88,7 @@ apps/web/                 Next.js 16 App Router, Tailwind 4, zod, Vitest, Playwr
   src/tools/implementations.ts  tool implementations by slug (settings, blocker, process)
   src/tools/client/       browser tools, one module each
   src/lib/pdf/            pdf-lib edits run in a Web Worker; pdf.js rendering; page ranges
+  src/lib/image/          image worker: decode (incl. HEIC/TIFF), resize, encode; geometry
   src/components/pdf/     page-thumbnail grid and the pdf.js document hook
   src/lib/                file-kind sniffing, validation, ZIP/download, job API client
   e2e/                    Playwright tests that drive each browser tool in Chromium
@@ -164,9 +165,29 @@ Notes from building it:
 - **Known limits:** password-protected PDFs are refused with a clear message (unlocking is a
   post-MVP tool). Rebuilt documents keep page content but not bookmarks or form fields.
 
-**Phase 2: Image suite (about 1.5 weeks)**
+**Phase 2: Image suite (about 1.5 weeks) — done, except AI upscaling**
 - Compress (quality slider, before/after, size estimate), resize, convert (with HEIC input), and batch + ZIP. All client-side.
 - Upscale: Classic mode client-side; AI 2×/4× on the image-worker (ONNX Real-ESRGAN) with caps and a progress display.
+
+Notes from building it:
+- **One image pipeline for every tool.** A module Web Worker decodes, resizes, and encodes
+  (`src/lib/image/`); two run in parallel for batches, and Cancel terminates them.
+  - Decode: the browser's own decoder (applies EXIF rotation; GIFs give their first frame),
+    `libheif-js` for HEIC, `utif2` for TIFF, and `@jsquash` decoders as a fallback.
+  - Resize: `@jsquash/resize` (Lanczos3 in linear light) instead of `pica`; it works on raw
+    pixels inside the worker.
+  - Encode: `@jsquash` mozjpeg, WebP, AVIF, and OxiPNG. GIF output was dropped: browsers and
+    every target site take PNG or WebP instead.
+- **Metadata is always removed.** Re-encoding writes pixels only, so location and camera
+  data never leak; there is no "keep metadata" option.
+- **Compress keeps the original** when re-encoding to the same format wouldn't make it smaller,
+  and reuses the preview's encode when you run it.
+- **Images→PDF now takes HEIC, TIFF, and AVIF too**, through the same worker.
+- **AI upscaling is not built yet** (see risk 4). Real-ESRGAN weights are only published on
+  GitHub and Hugging Face, both blocked from the build environment, and a CPU worker needs a
+  budget decision. Options: (a) server ONNX worker with strict caps, (b) a GPU provider, or
+  (c) an in-browser model (UpscalerJS ESRGAN, MIT, on npm) that costs nothing to run.
+  Upscale ships with the classic Lanczos mode, marked as on-device.
 
 **Phase 3: Server conversions (about 2 weeks)**
 - Compress PDF, Office→PDF, PDF→Word/Excel/PPTX, HTML/URL→PDF, and ebook conversions.

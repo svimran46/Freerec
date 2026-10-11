@@ -207,7 +207,10 @@ export function ToolWorkspace({ tool, implementation = IMPLEMENTATIONS[tool.slug
           <ul className="flex flex-col gap-2">
             {run.outputs.map((output, i) => (
               <li key={`${output.name}-${i}`} className="flex items-center justify-between gap-4">
-                <span className="min-w-0 truncate">{output.name}</span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate">{output.name}</span>
+                  {output.detail && <span className="text-sm text-text-muted">{output.detail}</span>}
+                </span>
                 <button
                   type="button"
                   onClick={() => downloadBlob(output.data, output.name)}

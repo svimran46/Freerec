@@ -105,16 +105,3 @@ export function IconButton({
     </button>
   );
 }
-
-/** Loading and error states around a PDF's pages. */
-export function PdfStatus({ error }: { error: string | null }) {
-  return error ? (
-    <p role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">
-      {error}
-    </p>
-  ) : (
-    <p className="text-sm text-text-muted" role="status">
-      Reading pages…
-    </p>
-  );
-}

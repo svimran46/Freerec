@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { PDFDocument } from "pdf-lib";
 import { JPEG_4X2, numberedPdf, pageNumbers, pageRotations, PNG_4X2, withExifOrientation } from "../src/test/fixtures";
+import { download, forbidUploads } from "./helpers";
 
 /** A 1×1 GIF, which the browser has to redraw before it can go into a PDF. */
 const GIF_1X1 = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
@@ -11,23 +11,6 @@ const pdf = async (name: string, pages: number) => ({
   mimeType: "application/pdf",
   buffer: Buffer.from(await numberedPdf(pages)),
 });
-
-/** Fails the test if a page sends anything to our API: these tools must stay on the device. */
-function forbidUploads(page: Page) {
-  const calls: string[] = [];
-  page.on("request", (request) => {
-    if (new URL(request.url()).pathname.startsWith("/api/")) calls.push(request.url());
-  });
-  return () => expect(calls).toEqual([]);
-}
-
-async function download(page: Page, name: string): Promise<Buffer> {
-  const results = page.getByRole("region", { name: "Results" });
-  const row = results.getByRole("listitem").filter({ hasText: name });
-  const [file] = await Promise.all([page.waitForEvent("download"), row.getByRole("button").click()]);
-  expect(file.suggestedFilename()).toBe(name);
-  return readFile((await file.path())!);
-}
 
 test("merge PDFs in a chosen order", async ({ page }) => {
   const noUploads = forbidUploads(page);

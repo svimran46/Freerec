@@ -33,8 +33,8 @@ describe("tool registry", () => {
     expect(grouped.flatMap((g) => g.tools)).toHaveLength(TOOLS.length);
   });
 
-  it("implements every phase 1 tool, and only registered tools", () => {
-    for (const tool of TOOLS.filter((t) => t.phase === 1)) {
+  it("implements every phase 1 and 2 tool, and only registered tools", () => {
+    for (const tool of TOOLS.filter((t) => t.phase <= 2)) {
       expect(IMPLEMENTATIONS[tool.slug], tool.slug).toBeDefined();
     }
     for (const slug of Object.keys(IMPLEMENTATIONS)) expect(getTool(slug), slug).toBeDefined();
