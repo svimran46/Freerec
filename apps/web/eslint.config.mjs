@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Copied from pdfjs-dist by scripts/copy-pdfjs-assets.mjs.
     "public/pdfjs/**",
+    // Cloudflare (OpenNext and Wrangler) build output.
+    ".open-next/**",
+    ".wrangler/**",
     // Playwright output.
     "test-results/**",
     "playwright-report/**",

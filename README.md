@@ -5,7 +5,8 @@ compress (with an adjustable quality setting), resize, convert and upscale image
 No account, no trial, no watermark. Tools run in the browser wherever possible;
 the rest run on short-lived server jobs whose files are deleted within an hour.
 
-See [docs/PLAN.md](docs/PLAN.md) for the feature inventory, architecture and roadmap.
+See [docs/PLAN.md](docs/PLAN.md) for the feature inventory, architecture and roadmap, and
+[docs/DEPLOY.md](docs/DEPLOY.md) for hosting on Cloudflare Workers.
 
 ## Status
 
@@ -27,6 +28,7 @@ services/backend/  Python: FastAPI job API, RQ worker, janitor, server-side ops
 infra/             docker-compose stack for local development
 scripts/smoke.py   End-to-end check against a running stack
 docs/PLAN.md       Feature inventory, architecture, roadmap
+docs/DEPLOY.md     Cloudflare Workers deployment and one-time setup
 ```
 
 ## Run everything
@@ -52,6 +54,9 @@ pnpm --filter web lint && pnpm --filter web typecheck
 
 # Browser tests for the on-device tools (Chromium via Playwright)
 pnpm --filter web build && pnpm --filter web test:e2e
+
+# Cloudflare Workers build and local preview (see docs/DEPLOY.md)
+pnpm --filter web build:cloudflare && pnpm --filter web preview:cloudflare
 ```
 
 Backend (Python 3.12+, uv):

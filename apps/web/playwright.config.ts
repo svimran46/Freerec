@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3100;
+/** Set to test an already running server, such as `pnpm preview:cloudflare`, instead. */
+const BASE_URL = process.env.E2E_BASE_URL;
 
 /**
  * Browser tests for the tools that run on the visitor's device. Run `pnpm build`
@@ -11,8 +13,8 @@ export default defineConfig({
   timeout: 60_000,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? "github" : "list",
-  use: { ...devices["Desktop Chrome"], baseURL: `http://localhost:${PORT}` },
-  webServer: {
+  use: { ...devices["Desktop Chrome"], baseURL: BASE_URL ?? `http://localhost:${PORT}` },
+  webServer: BASE_URL ? undefined : {
     command: [
       "cp -r .next/static .next/standalone/apps/web/.next/",
       "cp -r public .next/standalone/apps/web/",
