@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowClockwise, ArrowLeft, ArrowRight, Trash } from "@phosphor-icons/react/dist/ssr";
 import { LoadStatus } from "@/components/LoadStatus";
 import { smallButtonClass } from "@/components/form";
 import { allPages, IconButton, PageGrid, type GridPage } from "@/components/pdf/PageGrid";
@@ -59,14 +60,14 @@ function OrganizeOptionsPanel({ files, options, setOptions, disabled }: OptionsP
                 disabled={disabled || position === 0}
                 onClick={() => move(position, position - 1)}
               >
-                ←
+                <ArrowLeft size={15} />
               </IconButton>
               <IconButton
                 label={`Move ${name} later`}
                 disabled={disabled || position === pages.length - 1}
                 onClick={() => move(position, position + 1)}
               >
-                →
+                <ArrowRight size={15} />
               </IconButton>
               <IconButton
                 label={`Turn ${name} right`}
@@ -77,14 +78,14 @@ function OrganizeOptionsPanel({ files, options, setOptions, disabled }: OptionsP
                   )
                 }
               >
-                ↻
+                <ArrowClockwise size={15} />
               </IconButton>
               <IconButton
                 label={`Delete ${name}`}
                 disabled={disabled}
                 onClick={() => update((list) => list.filter((p) => p.key !== page.key))}
               >
-                ✕
+                <Trash size={15} />
               </IconButton>
             </>
           );

@@ -1,52 +1,179 @@
-import Link from "next/link";
-import { PrivacyBadge } from "@/components/PrivacyBadge";
-import { SITE } from "@/lib/site";
-import { CATEGORIES, toolsByCategory } from "@/tools/registry";
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Cloud,
+  DownloadSimple,
+  HandGrabbing,
+  Laptop,
+  SlidersHorizontal,
+} from "@phosphor-icons/react/dist/ssr";
+import { HeroDrop } from "@/components/home/HeroDrop";
+import { ToolDirectory } from "@/components/home/ToolDirectory";
+import { Reveal } from "@/components/Reveal";
+import { Eyebrow, PillLink } from "@/components/ui";
+import { formatBytes } from "@/lib/format";
+import { LIMITS } from "@/lib/limits";
+import { isAvailable, TOOLS } from "@/tools/registry";
+
+const FLOW = [
+  {
+    icon: HandGrabbing,
+    word: "Drop",
+    text: "Drag files in or browse for them. Each one is checked by its contents, not just its name.",
+  },
+  {
+    icon: SlidersHorizontal,
+    word: "Adjust",
+    text: "Pick pages, quality or size. Image tools show a live before and after while you tune.",
+  },
+  {
+    icon: DownloadSimple,
+    word: "Download",
+    text: "Save each result on its own, or everything at once as a single ZIP.",
+  },
+];
 
 export default function HomePage() {
+  const ready = TOOLS.filter(isAvailable);
+  const onDevice = ready.filter((tool) => tool.runtime === "client").length;
+  const soon = TOOLS.length - ready.length;
+
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 py-12">
-      <section className="flex flex-col gap-4">
-        <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          {SITE.tagline}
-        </h1>
-        <p className="max-w-2xl text-lg text-text-muted">
-          Merge, split, convert, and compress PDFs. Compress, resize, convert, and upscale images.
-          No account, no trial, no watermark. Most tools run entirely in your browser.
-        </p>
-      </section>
-
-      <div id="tools" className="flex flex-col gap-10">
-        {toolsByCategory().map(({ category, tools }) => (
-          <section key={category} aria-labelledby={`cat-${category}`} className="flex flex-col gap-4">
-            <div>
-              <h2 id={`cat-${category}`} className="text-xl font-semibold">
-                {CATEGORIES[category].title}
-              </h2>
-              <p className="text-sm text-text-muted">{CATEGORIES[category].blurb}</p>
+    <>
+      {/* Hero: message on the left, a working drop target on the right. */}
+      <section className="relative isolate overflow-hidden px-4 pt-28 pb-20 md:px-6 md:pt-36 md:pb-14">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-[radial-gradient(60%_55%_at_78%_38%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_70%),radial-gradient(40%_40%_at_10%_0%,color-mix(in_oklab,var(--accent)_6%,transparent),transparent_70%)]"
+        />
+        <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          <div className="flex flex-col items-start gap-7 lg:col-span-7 lg:pr-6">
+            <div className="animate-rise">
+              <Eyebrow>
+                {ready.length} tools ready · {soon} on the way
+              </Eyebrow>
             </div>
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {tools.map((tool) => (
-                <li key={tool.slug}>
-                  <Link
-                    href={`/tools/${tool.slug}`}
-                    className="flex h-full flex-col gap-1 rounded-xl border border-border bg-surface p-4 hover:border-accent"
-                  >
-                    <span className="font-medium">{tool.title}</span>
-                    <span className="text-sm text-text-muted">{tool.summary}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
-
-      <section className="flex flex-col gap-2 rounded-2xl bg-surface-muted p-6">
-        <h2 className="text-lg font-semibold">How your files are handled</h2>
-        <PrivacyBadge runtime="client" />
-        <PrivacyBadge runtime="server" />
+            <h1
+              className="animate-rise text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.1rem]"
+              style={{ animationDelay: "80ms" }}
+            >
+              PDF and image tools that <span className="text-accent">respect your files.</span>
+            </h1>
+            <p
+              className="animate-rise max-w-[46ch] text-lg leading-relaxed text-text-muted"
+              style={{ animationDelay: "160ms" }}
+            >
+              Merge, split, compress and convert. No account, no watermark, and most tools never upload a
+              single byte.
+            </p>
+            <div className="animate-rise flex flex-wrap items-center gap-3" style={{ animationDelay: "240ms" }}>
+              <PillLink href="#tools" icon={ArrowDown}>
+                All tools
+              </PillLink>
+              <PillLink href="#privacy" tone="secondary" icon={ArrowUpRight}>
+                How files are handled
+              </PillLink>
+            </div>
+          </div>
+          <div className="animate-rise lg:col-span-5" style={{ animationDelay: "200ms" }}>
+            <HeroDrop />
+          </div>
+        </div>
       </section>
-    </div>
+
+      {/* Directory: every tool, grouped in a bento grid. */}
+      <section id="tools" aria-labelledby="tools-title" className="px-4 py-20 md:px-6 md:py-28">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-10">
+          <Reveal className="flex max-w-2xl flex-col gap-4">
+            <h2 id="tools-title" className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl">
+              Pick a tool, drop your files.
+            </h2>
+            <p className="max-w-[58ch] text-lg leading-relaxed text-text-muted">
+              Every tool works the same way, with the same limits: up to {formatBytes(LIMITS.maxFileBytes)} per
+              file and {LIMITS.maxFiles} files at a time.
+            </p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <ToolDirectory />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Flow: three verbs set as large type. */}
+      <section aria-label="How it works" className="px-4 py-20 md:px-6 md:py-28">
+        <ol className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 md:grid-cols-[1.1fr_1fr_1fr] md:gap-10">
+          {FLOW.map(({ icon: Glyph, word, text }, i) => (
+            <Reveal
+              as="li"
+              key={word}
+              delay={i * 0.12}
+              className={`flex flex-col gap-5 border-t border-hairline pt-8 ${i === 1 ? "md:mt-16" : ""} ${
+                i === 2 ? "md:mt-32" : ""
+              }`}
+            >
+              <Glyph size={28} weight="light" aria-hidden="true" className="text-accent" />
+              <span className="text-6xl leading-none font-semibold tracking-[-0.045em] md:text-7xl">{word}</span>
+              <p className="max-w-[34ch] leading-relaxed text-text-muted">{text}</p>
+            </Reveal>
+          ))}
+        </ol>
+      </section>
+
+      {/* Privacy: where processing happens, side by side. */}
+      <section id="privacy" aria-labelledby="privacy-title" className="px-4 py-20 md:px-6 md:py-28">
+        <div className="mx-auto flex max-w-[1240px] flex-col gap-10">
+          <Reveal className="flex max-w-2xl flex-col gap-4">
+            <h2
+              id="privacy-title"
+              className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl"
+            >
+              How your files are handled
+            </h2>
+            <p className="max-w-[58ch] text-lg leading-relaxed text-text-muted">
+              Every tool page says where it runs before you add anything. There are only two places.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.1} className="bezel">
+            <div className="bezel-core grid grid-cols-1 overflow-hidden md:grid-cols-2">
+              <div className="flex flex-col gap-6 p-7 md:p-10">
+                <span
+                  aria-hidden="true"
+                  className="flex size-14 items-center justify-center rounded-2xl bg-accent-soft text-accent"
+                >
+                  <Laptop size={28} weight="light" />
+                </span>
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-2xl font-semibold tracking-tight">On your device</h3>
+                  <p className="max-w-[44ch] leading-relaxed text-text-muted">
+                    {onDevice} of the {ready.length} tools available today run entirely in your browser. Your files
+                    are read and written locally and never leave the device.
+                  </p>
+                </div>
+                <p className="mt-auto text-sm text-text-muted">
+                  Look for the laptop icon next to a tool.
+                </p>
+              </div>
+              <div className="flex flex-col gap-6 border-t border-hairline bg-[linear-gradient(180deg,var(--shell),transparent)] p-7 md:border-t-0 md:border-l md:p-10">
+                <span
+                  aria-hidden="true"
+                  className="flex size-14 items-center justify-center rounded-2xl bg-surface text-text shadow-[inset_0_0_0_1px_var(--hairline)]"
+                >
+                  <Cloud size={28} weight="light" />
+                </span>
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-2xl font-semibold tracking-tight">On our servers</h3>
+                  <p className="max-w-[44ch] leading-relaxed text-text-muted">
+                    Conversions that need heavy software, such as Office to PDF, run as short-lived jobs. Uploads and
+                    results are deleted automatically within {LIMITS.retentionMinutes} minutes.
+                  </p>
+                </div>
+                <p className="mt-auto text-sm text-text-muted">Look for the cloud icon next to a tool.</p>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </>
   );
 }

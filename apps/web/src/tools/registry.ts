@@ -144,6 +144,20 @@ export function getTool(slug: string): ToolDefinition | undefined {
   return TOOLS.find((tool) => tool.slug === slug);
 }
 
+/**
+ * Whether a tool can be used today. Phase 3 tools have pages but no processor
+ * yet; a registry test keeps this in step with the implementations.
+ */
+export function isAvailable(tool: ToolDefinition): boolean {
+  return tool.phase < 3;
+}
+
+/** Tools that accept a file kind, usable ones first. */
+export function toolsFor(kind: FileKind): ToolDefinition[] {
+  const matches = TOOLS.filter((tool) => tool.accepts.includes(kind));
+  return [...matches.filter(isAvailable), ...matches.filter((tool) => !isAvailable(tool))];
+}
+
 export function toolsByCategory(): { category: ToolCategory; tools: ToolDefinition[] }[] {
   return (Object.keys(CATEGORIES) as ToolCategory[]).map((category) => ({
     category,

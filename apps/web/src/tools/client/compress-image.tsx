@@ -105,7 +105,7 @@ function Preview({ item, format, quality, cacheKey }: { item: AcceptedFile; form
             <CompareSlider before={original} after={state.url} aspect={state.result.size.width / state.result.size.height} />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- local object URL
-            <img src={state.url} alt="Compressed preview" className="mx-auto max-h-96 rounded-lg border border-border" />
+            <img src={state.url} alt="Compressed preview" className="mx-auto max-h-96 rounded-xl shadow-[0_0_0_1px_var(--hairline),0_16px_32px_-20px_rgb(var(--shadow-tint)/0.4)]" />
           )}
         </div>
       )}
@@ -133,7 +133,7 @@ function CompressOptionsPanel({ files, options, setOptions, disabled }: OptionsP
           hint={
             options.format === "keep" && files.some((f) => resolveFormat("keep", f.kind) === "png")
               ? "Lower quality makes smaller files. PNGs stay lossless and are optimized instead."
-              : "Lower quality makes smaller files. 60–80 suits most photos."
+              : "Lower quality makes smaller files. 60-80 suits most photos."
           }
           onChange={(value) => setOptions((o) => ({ ...o, quality: value }))}
         />
@@ -143,7 +143,7 @@ function CompressOptionsPanel({ files, options, setOptions, disabled }: OptionsP
           PNG is lossless: files are optimized without changing a pixel. For much smaller files, choose WebP or JPG.
         </p>
       )}
-      <section aria-label="Preview" className="flex flex-col gap-3 border-t border-border pt-4">
+      <section aria-label="Preview" className="flex flex-col gap-3 border-t border-hairline pt-5">
         {files.length > 1 && (
           <Field label="Preview">
             <select

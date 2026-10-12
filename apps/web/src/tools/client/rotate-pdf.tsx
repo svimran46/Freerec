@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowClockwise, ArrowCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { LoadStatus } from "@/components/LoadStatus";
 import { smallButtonClass } from "@/components/form";
 import { allPages, IconButton, PageGrid } from "@/components/pdf/PageGrid";
@@ -38,10 +39,12 @@ function RotateOptionsPanel({ files, options, setOptions, disabled }: OptionsPro
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap gap-2">
         <button type="button" className={smallButtonClass} disabled={disabled} onClick={() => turnAll(-90)}>
-          ↺ Turn all left
+          <ArrowCounterClockwise size={15} aria-hidden="true" />
+          Turn all left
         </button>
         <button type="button" className={smallButtonClass} disabled={disabled} onClick={() => turnAll(90)}>
-          ↻ Turn all right
+          <ArrowClockwise size={15} aria-hidden="true" />
+          Turn all right
         </button>
         <button
           type="button"
@@ -64,14 +67,14 @@ function RotateOptionsPanel({ files, options, setOptions, disabled }: OptionsPro
               disabled={disabled}
               onClick={() => turnPage(page.index, -90)}
             >
-              ↺
+              <ArrowCounterClockwise size={15} />
             </IconButton>
             <IconButton
               label={`Turn page ${page.index + 1} right`}
               disabled={disabled}
               onClick={() => turnPage(page.index, 90)}
             >
-              ↻
+              <ArrowClockwise size={15} />
             </IconButton>
           </>
         )}

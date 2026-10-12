@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { FILE_KINDS } from "@/lib/file-kinds";
 import { LIMITS } from "@/lib/limits";
 import { IMPLEMENTATIONS } from "./implementations";
-import { CATEGORIES, getTool, TOOLS, toolsByCategory } from "./registry";
+import { CATEGORIES, getTool, isAvailable, TOOLS, toolsByCategory, toolsFor } from "./registry";
 
 describe("tool registry", () => {
   it("has unique, URL-safe slugs", () => {
@@ -38,5 +38,19 @@ describe("tool registry", () => {
       expect(IMPLEMENTATIONS[tool.slug], tool.slug).toBeDefined();
     }
     for (const slug of Object.keys(IMPLEMENTATIONS)) expect(getTool(slug), slug).toBeDefined();
+  });
+
+  it("marks a tool available exactly when it has an implementation", () => {
+    for (const tool of TOOLS) {
+      expect(isAvailable(tool), tool.slug).toBe(IMPLEMENTATIONS[tool.slug] !== undefined);
+    }
+  });
+
+  it("suggests usable tools first for a file kind", () => {
+    const forPdf = toolsFor("pdf");
+    expect(forPdf.every((tool) => tool.accepts.includes("pdf"))).toBe(true);
+    const firstUnavailable = forPdf.findIndex((tool) => !isAvailable(tool));
+    expect(forPdf.slice(firstUnavailable).every((tool) => !isAvailable(tool))).toBe(true);
+    expect(toolsFor("jpeg").map((tool) => tool.slug)).toContain("compress-image");
   });
 });
