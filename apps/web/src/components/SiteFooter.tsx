@@ -6,7 +6,7 @@ import { CATEGORIES, isAvailable, toolsByCategory } from "@/tools/registry";
 
 export function SiteFooter() {
   return (
-    <footer className="px-4 pt-24 pb-8 md:px-6">
+    <footer className="px-4 pt-16 pb-8 md:px-6 md:pt-24">
       <div className="bezel mx-auto max-w-[1240px]">
         <div className="bezel-core grid gap-12 px-6 py-10 md:grid-cols-12 md:gap-8 md:px-10 md:py-14">
           <div className="flex flex-col gap-4 md:col-span-4">

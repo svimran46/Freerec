@@ -11,7 +11,7 @@ export default function NotFound() {
         >
           <FileDashed size={30} weight="light" />
         </span>
-        <h1 className="text-5xl leading-[1.02] font-semibold tracking-[-0.035em] md:text-6xl">Page not found</h1>
+        <h1 className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl">Page not found</h1>
         <p className="max-w-[44ch] text-lg text-text-muted">
           The link may be old, or the tool may have moved. Every tool is listed on the homepage.
         </p>

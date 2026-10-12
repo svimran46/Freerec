@@ -76,8 +76,8 @@ export default async function ToolPage(props: PageProps<"/tools/[slug]">) {
               <ToolIcon slug={tool.slug} size={28} weight="light" />
             </span>
             <div className="flex flex-col gap-3">
-              <h1 className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl">{tool.title}</h1>
-              <p className="max-w-[56ch] text-lg leading-relaxed text-text-muted">{tool.summary}</p>
+              <h1 className="text-3xl leading-[1.08] font-semibold tracking-[-0.025em] md:text-[2.75rem]">{tool.title}</h1>
+              <p className="max-w-[56ch] text-base leading-relaxed text-text-muted md:text-lg">{tool.summary}</p>
             </div>
             <PrivacyBadge runtime={tool.runtime} />
           </header>

@@ -208,7 +208,7 @@ export function ToolDirectory() {
                 <div className={`bezel-core relative flex h-full flex-col gap-5 overflow-hidden p-3 sm:p-4 ${cell.surface}`}>
                   <header className="flex items-start justify-between gap-4 px-3 pt-3">
                     <div className="flex flex-col gap-1.5">
-                      <h3 id={`cat-${category}-title`} className="text-2xl font-semibold tracking-tight">
+                      <h3 id={`cat-${category}-title`} className="text-xl font-semibold tracking-tight md:text-2xl">
                         {CATEGORIES[category].title}
                       </h3>
                       <p className="max-w-[40ch] text-sm text-text-muted">{CATEGORIES[category].blurb}</p>

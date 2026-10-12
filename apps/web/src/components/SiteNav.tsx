@@ -118,7 +118,7 @@ export function SiteNav() {
                       <Link
                         href={`/tools/${tool.slug}`}
                         onClick={close}
-                        className="flex items-center gap-3 py-2.5 text-2xl font-medium tracking-tight"
+                        className="flex items-center gap-3 py-2 text-xl font-medium tracking-tight"
                       >
                         <ToolIcon slug={tool.slug} size={22} weight="light" className="text-accent" aria-hidden="true" />
                         {tool.title}

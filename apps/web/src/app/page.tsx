@@ -41,7 +41,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero: message on the left, a working drop target on the right. */}
-      <section className="relative isolate overflow-hidden px-4 pt-28 pb-20 md:px-6 md:pt-36 md:pb-14">
+      <section className="relative isolate overflow-hidden px-4 pt-28 pb-14 md:px-6 md:pt-36 md:pb-14">
         <div
           aria-hidden="true"
           className="absolute inset-0 -z-10 bg-[radial-gradient(60%_55%_at_78%_38%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_70%),radial-gradient(40%_40%_at_10%_0%,color-mix(in_oklab,var(--accent)_6%,transparent),transparent_70%)]"
@@ -54,13 +54,13 @@ export default function HomePage() {
               </Eyebrow>
             </div>
             <h1
-              className="animate-rise text-[2.6rem] leading-[1.02] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-[4.1rem]"
+              className="animate-rise text-[2.125rem] leading-[1.06] font-semibold tracking-[-0.03em] text-balance sm:text-5xl lg:text-[3.5rem]"
               style={{ animationDelay: "80ms" }}
             >
               PDF and image tools that <span className="text-accent">respect your files.</span>
             </h1>
             <p
-              className="animate-rise max-w-[46ch] text-lg leading-relaxed text-text-muted"
+              className="animate-rise max-w-[46ch] text-base leading-relaxed text-text-muted md:text-lg"
               style={{ animationDelay: "160ms" }}
             >
               Merge, split, compress and convert. No account, no watermark, and most tools never upload a
@@ -82,13 +82,13 @@ export default function HomePage() {
       </section>
 
       {/* Directory: every tool, grouped in a bento grid. */}
-      <section id="tools" aria-labelledby="tools-title" className="px-4 py-20 md:px-6 md:py-28">
+      <section id="tools" aria-labelledby="tools-title" className="px-4 py-14 md:px-6 md:py-28">
         <div className="mx-auto flex max-w-[1240px] flex-col gap-10">
           <Reveal className="flex max-w-2xl flex-col gap-4">
-            <h2 id="tools-title" className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl">
+            <h2 id="tools-title" className="text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.025em] md:text-[2.5rem]">
               Pick a tool, drop your files.
             </h2>
-            <p className="max-w-[58ch] text-lg leading-relaxed text-text-muted">
+            <p className="max-w-[58ch] text-base leading-relaxed text-text-muted md:text-lg">
               Every tool works the same way, with the same limits: up to {formatBytes(LIMITS.maxFileBytes)} per
               file and {LIMITS.maxFiles} files at a time.
             </p>
@@ -100,8 +100,8 @@ export default function HomePage() {
       </section>
 
       {/* Flow: three verbs set as large type. */}
-      <section aria-label="How it works" className="px-4 py-20 md:px-6 md:py-28">
-        <ol className="mx-auto grid max-w-[1240px] grid-cols-1 gap-12 md:grid-cols-[1.1fr_1fr_1fr] md:gap-10">
+      <section aria-label="How it works" className="px-4 py-14 md:px-6 md:py-28">
+        <ol className="mx-auto grid max-w-[1240px] grid-cols-1 gap-10 md:grid-cols-[1.1fr_1fr_1fr]">
           {FLOW.map(({ icon: Glyph, word, text }, i) => (
             <Reveal
               as="li"
@@ -111,8 +111,8 @@ export default function HomePage() {
                 i === 2 ? "md:mt-32" : ""
               }`}
             >
-              <Glyph size={28} weight="light" aria-hidden="true" className="text-accent" />
-              <span className="text-6xl leading-none font-semibold tracking-[-0.045em] md:text-7xl">{word}</span>
+              <Glyph size={24} weight="light" aria-hidden="true" className="text-accent" />
+              <span className="text-[2.5rem] leading-none font-semibold tracking-[-0.04em] md:text-6xl">{word}</span>
               <p className="max-w-[34ch] leading-relaxed text-text-muted">{text}</p>
             </Reveal>
           ))}
@@ -120,16 +120,16 @@ export default function HomePage() {
       </section>
 
       {/* Privacy: where processing happens, side by side. */}
-      <section id="privacy" aria-labelledby="privacy-title" className="px-4 py-20 md:px-6 md:py-28">
+      <section id="privacy" aria-labelledby="privacy-title" className="px-4 py-14 md:px-6 md:py-28">
         <div className="mx-auto flex max-w-[1240px] flex-col gap-10">
           <Reveal className="flex max-w-2xl flex-col gap-4">
             <h2
               id="privacy-title"
-              className="text-4xl leading-[1.05] font-semibold tracking-[-0.03em] md:text-5xl"
+              className="text-[1.75rem] leading-[1.1] font-semibold tracking-[-0.025em] md:text-[2.5rem]"
             >
               How your files are handled
             </h2>
-            <p className="max-w-[58ch] text-lg leading-relaxed text-text-muted">
+            <p className="max-w-[58ch] text-base leading-relaxed text-text-muted md:text-lg">
               Every tool page says where it runs before you add anything. There are only two places.
             </p>
           </Reveal>
@@ -144,10 +144,11 @@ export default function HomePage() {
                   <Laptop size={28} weight="light" />
                 </span>
                 <div className="flex flex-col gap-3">
-                  <h3 className="text-2xl font-semibold tracking-tight">On your device</h3>
+                  <h3 className="text-xl font-semibold tracking-tight md:text-2xl">On your device</h3>
                   <p className="max-w-[44ch] leading-relaxed text-text-muted">
-                    {onDevice} of the {ready.length} tools available today run entirely in your browser. Your files
-                    are read and written locally and never leave the device.
+                    {onDevice === ready.length ? `All ${ready.length}` : `${onDevice} of the ${ready.length}`} tools
+                    available today run entirely in your browser. Your files are read and written locally and never
+                    leave the device.
                   </p>
                 </div>
                 <p className="mt-auto text-sm text-text-muted">
@@ -162,7 +163,7 @@ export default function HomePage() {
                   <Cloud size={28} weight="light" />
                 </span>
                 <div className="flex flex-col gap-3">
-                  <h3 className="text-2xl font-semibold tracking-tight">On our servers</h3>
+                  <h3 className="text-xl font-semibold tracking-tight md:text-2xl">On our servers</h3>
                   <p className="max-w-[44ch] leading-relaxed text-text-muted">
                     Conversions that need heavy software, such as Office to PDF, run as short-lived jobs. Uploads and
                     results are deleted automatically within {LIMITS.retentionMinutes} minutes.
