@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "@phosphor-icons/react/dist/ssr";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import type { ReactNode } from "react";
 import { useDragReorder } from "@/components/useDragReorder";
@@ -44,10 +45,12 @@ export function PageGrid({ doc, pages, label, disabled, selection, onMove, actio
           <li
             key={page.key}
             {...itemProps(position)}
-            className={`flex flex-col items-center gap-2 rounded-xl border bg-surface p-2 ${
-              selected || over === position ? "border-accent" : "border-border"
-            } ${selected ? "bg-accent-soft" : ""} ${dragging === position ? "opacity-40" : ""} ${
-              onMove && !disabled ? "cursor-grab" : ""
+            className={`flex flex-col items-center gap-2 rounded-[1.25rem] p-2.5 transition-[background-color,box-shadow,opacity,transform] duration-300 ease-fluid ${
+              selected || over === position
+                ? "bg-accent-soft shadow-[0_0_0_2px_var(--accent)]"
+                : "bg-shell shadow-[inset_0_0_0_1px_var(--hairline)]"
+            } ${over === position && !selected ? "scale-[1.02]" : ""} ${dragging === position ? "opacity-40" : ""} ${
+              onMove && !disabled ? "cursor-grab active:cursor-grabbing" : ""
             }`}
           >
             {selection ? (
@@ -57,22 +60,24 @@ export function PageGrid({ doc, pages, label, disabled, selection, onMove, actio
                 aria-label={`Page ${page.index + 1}`}
                 disabled={disabled}
                 onClick={() => selection.onToggle(page)}
-                className="relative rounded-lg focus-visible:outline-2 focus-visible:outline-accent"
+                className="relative rounded-xl focus-visible:outline-2 focus-visible:outline-accent"
               >
                 {thumbnail}
                 <span
                   aria-hidden="true"
-                  className={`absolute top-1 right-1 flex size-6 items-center justify-center rounded-full border text-xs ${
-                    selected ? "border-accent bg-accent text-white dark:text-bg" : "border-border bg-surface"
+                  className={`absolute top-1 right-1 flex size-6 items-center justify-center rounded-full transition-[background-color,transform] duration-300 ease-fluid ${
+                    selected
+                      ? "scale-100 bg-accent text-on-accent"
+                      : "scale-90 bg-surface shadow-[inset_0_0_0_1px_var(--border)]"
                   }`}
                 >
-                  {selected ? "✓" : ""}
+                  {selected && <Check size={13} weight="bold" />}
                 </span>
               </button>
             ) : (
               thumbnail
             )}
-            <span className="text-xs text-text-muted">Page {page.index + 1}</span>
+            <span className="font-mono text-[11px] text-text-muted">Page {page.index + 1}</span>
             {actions && <div className="flex flex-wrap justify-center gap-1">{actions(page, position)}</div>}
           </li>
         );
@@ -99,7 +104,7 @@ export function IconButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex size-8 items-center justify-center rounded-lg border border-border bg-surface text-sm hover:border-accent disabled:cursor-not-allowed disabled:opacity-40"
+      className="flex size-8 items-center justify-center rounded-full bg-surface text-text-muted shadow-[inset_0_1px_0_var(--highlight),0_0_0_1px_var(--hairline)] transition-[background-color,color,transform] duration-300 ease-fluid hover:bg-surface-muted hover:text-text active:scale-90 disabled:cursor-not-allowed disabled:opacity-40"
     >
       <span aria-hidden="true">{children}</span>
     </button>

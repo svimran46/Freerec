@@ -54,7 +54,7 @@ export function PageThumbnail({ doc, index, rotate = 0 }: PageThumbnailProps) {
         if (controller.signal.aborted) return;
         canvas.style.width = `${canvas.width / ratio}px`;
         canvas.style.height = `${canvas.height / ratio}px`;
-        canvas.className = "bg-white shadow-sm ring-1 ring-border";
+        canvas.className = "rounded-[3px] bg-white shadow-[0_6px_14px_-8px_rgb(var(--shadow-tint)/0.45),0_0_0_1px_var(--hairline)]";
         element.append(canvas);
         setState("ready");
       }).catch(() => {
@@ -94,13 +94,15 @@ export function PageThumbnail({ doc, index, rotate = 0 }: PageThumbnailProps) {
     >
       <div
         ref={holder}
-        className="flex items-center justify-center transition-transform"
+        className="flex items-center justify-center transition-transform duration-500 ease-fluid"
         style={{ transform: `rotate(${rotate}deg)` }}
       />
       {state !== "ready" && (
         <span
           aria-hidden="true"
-          className="absolute inset-3 flex items-center justify-center rounded bg-surface-muted text-xs text-text-muted"
+          className={`absolute inset-3 flex items-center justify-center rounded-md bg-surface-muted text-xs text-text-muted ${
+            state === "waiting" ? "animate-pulse" : ""
+          }`}
         >
           {state === "failed" ? "No preview" : ""}
         </span>

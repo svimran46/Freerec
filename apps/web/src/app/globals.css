@@ -1,52 +1,254 @@
 @import "tailwindcss";
 
+/*
+ * Freerec design tokens.
+ *
+ * Shape system (followed everywhere):
+ *   - interactive controls (buttons, chips, badges) are full pills
+ *   - containers use the double bezel: a 28px outer shell around a 22px inner core
+ *   - text fields and page tiles use 14px
+ *
+ * One accent (the Freerec emerald), cool mineral neutrals, light and dark from
+ * the system preference.
+ */
+
 :root {
-  --bg: #f7f7f4;
-  --surface: #ffffff;
-  --surface-muted: #efeee9;
-  --text: #1c1b18;
-  --text-muted: #5f5d55;
-  --border: #dcdad2;
+  --bg: #eceeec;
+  --bg-deep: #e2e6e3;
+  --surface: #f9faf9;
+  --surface-muted: #e5e8e6;
+  --shell: rgb(16 24 20 / 0.035);
+  --hairline: rgb(16 24 20 / 0.08);
+  --text: #121614;
+  --text-muted: #565f5a;
+  --border: #d3d8d5;
   --accent: #1f6f5c;
   --accent-strong: #165244;
-  --accent-soft: #dcefe8;
-  --danger: #b4321f;
-  --danger-soft: #fbe5e1;
+  --accent-soft: #d6eae2;
+  --on-accent: #f4faf7;
+  --danger: #a8301d;
+  --danger-soft: #f7e2dd;
+  --highlight: rgb(255 255 255 / 0.85);
+  --shadow-tint: 20 44 34;
+  --glass: rgb(249 250 249 / 0.72);
+  --grain-opacity: 0.035;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #131412;
-    --surface: #1c1d1a;
-    --surface-muted: #252622;
-    --text: #ecebe6;
-    --text-muted: #a5a39a;
-    --border: #36372f;
+    --bg: #0b0d0c;
+    --bg-deep: #070908;
+    --surface: #141816;
+    --surface-muted: #1b201d;
+    --shell: rgb(255 255 255 / 0.035);
+    --hairline: rgb(255 255 255 / 0.08);
+    --text: #e9ecea;
+    --text-muted: #9ba49f;
+    --border: #2a302d;
     --accent: #5cc2a5;
-    --accent-strong: #84d6bd;
-    --accent-soft: #1d3a32;
+    --accent-strong: #86d6be;
+    --accent-soft: #15322a;
+    --on-accent: #05130e;
     --danger: #f08a78;
-    --danger-soft: #3d1f1a;
+    --danger-soft: #3a1c17;
+    --highlight: rgb(255 255 255 / 0.06);
+    --shadow-tint: 0 0 0;
+    --glass: rgb(20 24 22 / 0.7);
+    --grain-opacity: 0.05;
   }
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-deep: var(--bg-deep);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-shell: var(--shell);
+  --color-hairline: var(--hairline);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
+@theme {
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-shell: 1.75rem;
+  --radius-core: 1.375rem;
+  --animate-rise: rise 0.7s var(--ease-out-expo) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Z-index scale: nav 40, menu overlay 50, grain 60. */
+
+/* Double bezel: an outer tray holding an inner plate. */
+@utility bezel {
+  border-radius: var(--radius-shell);
+  background: var(--shell);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  padding: 0.375rem;
+}
+
+@utility bezel-core {
+  border-radius: var(--radius-core);
+  background: var(--surface);
+  box-shadow:
+    inset 0 1px 0 var(--highlight),
+    0 0 0 1px var(--hairline),
+    0 24px 48px -32px rgb(var(--shadow-tint) / 0.28),
+    0 2px 6px -2px rgb(var(--shadow-tint) / 0.08);
+}
+
+/* Frosted glass for fixed layers only (nav, menu). */
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 var(--highlight),
+    0 0 0 1px var(--hairline),
+    0 16px 40px -24px rgb(var(--shadow-tint) / 0.35);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Element defaults live in the base layer so utilities can override them. */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Film grain: fixed, non-interactive, never on scrolling content. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* Range inputs share one look across tools. */
+  input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 1.5rem;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-muted);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-muted);
+    box-shadow: inset 0 0 0 1px var(--hairline);
+  }
+
+  input[type="range"]::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 12px -4px rgb(var(--shadow-tint) / 0.4);
+    transition: transform 0.25s var(--ease-fluid);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    box-shadow: 0 4px 12px -4px rgb(var(--shadow-tint) / 0.4);
+  }
+
+  input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.15);
+  }
+
+  input[type="range"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 2.25rem !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 256 256'%3E%3Cpath fill='none' stroke='%23808a85' stroke-linecap='round' stroke-linejoin='round' stroke-width='20' d='M208 96l-80 80-80-80'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
